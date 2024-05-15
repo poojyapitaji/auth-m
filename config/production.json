@@ -1,0 +1,21 @@
+{
+  "environment": "production",
+  "server": {
+    "host": "",
+    "port": 2828
+  },
+  "cors": {
+    "origins": [""]
+  },
+  "database": {
+    "database": "",
+    "username": "",
+    "password": "",
+    "timezone": "",
+    "host": ""
+  },
+  "logging": {
+    "level": "database",
+    "timezone": "Asia/Kolkata"
+  }
+}

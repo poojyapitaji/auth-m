@@ -1,0 +1,21 @@
+{
+  "environment": "development",
+  "server": {
+    "host": "localhost",
+    "port": 2128
+  },
+  "cors": {
+    "origins": ["postman-origin", "https:/localhost:2821"]
+  },
+  "database": {
+    "name": "",
+    "username": "",
+    "password": "",
+    "timezone": "",
+    "host": ""
+  },
+  "logging": {
+    "level": "default",
+    "timezone": "Asia/Kolkata"
+  }
+}
