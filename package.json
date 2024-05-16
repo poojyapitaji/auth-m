@@ -4,9 +4,8 @@
   "description": "Auth server made with node, express, mysql & sequelize",
   "main": "index.js",
   "scripts": {
-    "generate-ssl": "ts-node generate-ssl.ts",
-    "start": "NODE_ENV=production ts-node src/index.ts",
-    "dev": "NODE_ENV=development nodemon --exec ts-node src/index.ts --exitcrash",
+    "start": "NODE_ENV=production ts-node src/server.ts",
+    "dev": "NODE_ENV=development nodemon --exec ts-node src/server.ts --exitcrash",
     "build": "tsc",
     "test": "jest --config jest.config.ts",
     "lint": "eslint 'src/**/*.{ts}'",

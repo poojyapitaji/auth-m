@@ -1,5 +1,5 @@
 # Dependency directories
-node_modules/
+node_modules
 dist/
 .cache/
 
@@ -19,3 +19,6 @@ Thumbs.db
 
 # Build files
 /build/
+
+# Certificate directories
+/cert/
