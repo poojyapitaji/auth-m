@@ -3,19 +3,16 @@
   "editor.formatOnSave": true,
   "eslint.enable": true,
   "eslint.options": {
-    "extensions": [
-      ".js",
-      ".jsx",
-      ".ts",
-      ".tsx"
-    ]
+    "extensions": [".js", ".jsx", ".ts", ".tsx"]
   },
   "files.exclude": {
     "**/.git": true,
     "**/.DS_Store": true,
-    "**/.vscode": true,
+    "**/.vscode": false,
     "**/__tests__": true,
     "**/node_modules": true
   },
-  "editor.defaultFormatter": "esbenp.prettier-vscode"
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "files.autoSave": "afterDelay",
+  "workbench.settings.editor": "ui"
 }
