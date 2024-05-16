@@ -2,10 +2,9 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import config from 'config';
 
-import cors from './middlewares/cors';
-import morgan from './middlewares/morgan';
+import { cors, morgan } from './middlewares';
+import { swagger } from './libs';
 import routes from './routes';
-import swagger from './libs/swagger';
 
 const app = express();
 
