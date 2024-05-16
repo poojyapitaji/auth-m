@@ -1,7 +1,7 @@
 import https from 'https';
 import config from 'config';
 
-import { browser, ssl } from './services';
+import { ssl } from './services';
 
 import app from './app';
 
@@ -14,5 +14,4 @@ const httpsServer = https.createServer({ key, cert }, app);
 
 httpsServer.listen(port, host, () => {
   console.log(`HTTPS server is running on https://${host}:${port}`);
-  browser.openBrowser();
 });

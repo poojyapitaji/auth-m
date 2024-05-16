@@ -13,6 +13,5 @@
     "**/node_modules": true
   },
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "files.autoSave": "afterDelay",
   "workbench.settings.editor": "ui"
 }

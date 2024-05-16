@@ -7,8 +7,8 @@ export const generateSSLCertificates = () => {
   const environment = config.get<string>('environment');
   const host = config.get<string>('server.host');
 
-  const keyPath = path.join(__dirname, '..', 'cert', 'private.key');
-  const certPath = path.join(__dirname, '..', 'cert', 'certificate.crt');
+  const keyPath = path.join(__dirname, '..', '..', 'cert', 'private.key');
+  const certPath = path.join(__dirname, '..', '..', 'cert', 'certificate.crt');
 
   if (!fs.existsSync(keyPath) || !fs.existsSync(certPath)) {
     console.log(
@@ -20,7 +20,7 @@ export const generateSSLCertificates = () => {
     try {
       console.log(`Generating SSL keys and certificate for ${environment}.\n`);
 
-      const certDir = path.join(__dirname, '..', 'cert');
+      const certDir = path.join(__dirname, '..', '..', 'cert');
       if (fs.existsSync(certDir)) {
         fs.rmdirSync(certDir, { recursive: true });
       }

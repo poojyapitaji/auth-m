@@ -1,14 +1,11 @@
 import { Sequelize, Model, DataTypes } from 'sequelize';
 import { sequelize } from '../database';
 
-interface LogAttributes {
-  uuid: string;
-  log: unknown;
-}
-
-class Log extends Model<LogAttributes> {
+class User extends Model {
   public uuid!: string;
-  public log!: unknown;
+  public name!: string;
+  public email!: string;
+  public password!: string;
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -23,18 +20,23 @@ class Log extends Model<LogAttributes> {
           primaryKey: true,
           unique: true
         },
-        log: {
-          type: DataTypes.JSON,
-          allowNull: false,
-          get() {
-            return JSON.parse(JSON.stringify(this.getDataValue('log')));
-          }
+        name: {
+          type: DataTypes.STRING,
+          allowNull: false
+        },
+        email: {
+          type: DataTypes.STRING,
+          allowNull: false
+        },
+        password: {
+          type: DataTypes.STRING,
+          allowNull: false
         }
       },
       {
         sequelize,
-        modelName: 'log',
-        tableName: 'logs',
+        modelName: 'user',
+        tableName: 'users',
         timestamps: true,
         underscored: true
       }
@@ -43,13 +45,18 @@ class Log extends Model<LogAttributes> {
 
   public static applyScopes(): void {
     this.addScope('defaultScope', {
+      attributes: { exclude: ['password'] },
+      order: [['createdAt', 'DESC']]
+    });
+    this.addScope('withPassword', {
+      attributes: { include: ['password'] },
       order: [['createdAt', 'DESC']]
     });
   }
 }
 
-Log.initialize(sequelize);
-Log.applyScopes();
-Log.sync();
+User.initialize(sequelize);
+User.applyScopes();
+User.sync();
 
-export default Log;
+export default User;

@@ -4,15 +4,19 @@
     "host": "localhost",
     "port": 2128
   },
+  "secrets": {
+    "access_token": "91f95d27892480a8996312ed8d3ea87f95cedbe8881c381c036a3d6aa531cdd2f3aaf2e8de75b94d04a6a191c3468a80308bf3fdf715260c2bafded433ba1384",
+    "refresh_token": "e2dc9c9ccdcb470712f6af769cffc3130e994e6a729f25f323bdb3473979c29ab15440e3ba58d5ec24abe2ed56b03d525b106d81a6cc4c9581a930d783250b87"
+  },
   "cors": {
     "origins": ["postman-origin", "https:/localhost:2821"]
   },
   "database": {
-    "name": "",
-    "username": "",
+    "name": "auth-m",
+    "username": "root",
     "password": "",
-    "timezone": "",
-    "host": ""
+    "timezone": "Asia/Kolkata",
+    "host": "localhost"
   },
   "logging": {
     "level": "default",
