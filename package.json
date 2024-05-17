@@ -4,7 +4,7 @@
   "description": "Auth server made with node, express, mysql & sequelize",
   "main": "index.js",
   "scripts": {
-    "start": "bash scripts/start.script.sh",
+    "start": "bash scripts/production.script.sh",
     "dev": "bash scripts/development.script.sh",
     "gm": "bash scripts/generate-migration.script.sh",
     "build": "tsc",
