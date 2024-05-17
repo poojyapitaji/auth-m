@@ -1,3 +1,3 @@
-import * as ssl from './ssl';
+import * as ssl from './ssl.service';
 
 export { ssl };

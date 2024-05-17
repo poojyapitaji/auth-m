@@ -11,6 +11,10 @@ app.use(cookieParser());
 app.use(cors);
 morgan(app);
 
-app.use('/', routes);
+app.get('/', (_req, res) => {
+  res.redirect('/api');
+});
+
+app.use('/api', routes);
 
 export default app;

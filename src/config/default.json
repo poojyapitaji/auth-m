@@ -14,7 +14,7 @@
   "database": {
     "name": "auth-m",
     "username": "root",
-    "password": "",
+    "password": null,
     "timezone": "Asia/Kolkata",
     "host": "localhost"
   },

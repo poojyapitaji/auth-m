@@ -1,7 +1,14 @@
 import { Sequelize, Model, DataTypes } from 'sequelize';
 import { sequelize } from '../database';
 
-class User extends Model {
+interface UserAttributes {
+  uuid: string;
+  name: string;
+  email: string;
+  password: string;
+}
+
+class User extends Model<UserAttributes> {
   public uuid!: string;
   public name!: string;
   public email!: string;
@@ -57,6 +64,5 @@ class User extends Model {
 
 User.initialize(sequelize);
 User.applyScopes();
-User.sync();
 
 export default User;

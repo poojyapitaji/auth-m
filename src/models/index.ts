@@ -1,4 +1,4 @@
-import Log from './log';
-import User from './user';
+import Log from './log.model';
+import User from './user.model';
 
 export { Log, User };

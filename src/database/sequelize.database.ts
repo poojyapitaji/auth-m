@@ -8,9 +8,10 @@ const timezone = config.get<string>('database.timezone');
 const host = config.get<string>('database.host');
 
 const sequelize = new Sequelize(database, username, password, {
-  dialect: 'mysql',
   timezone,
-  host
+  host,
+  logging: true,
+  dialect: 'mysql'
 });
 
 export default sequelize;

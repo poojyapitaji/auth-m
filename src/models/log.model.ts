@@ -50,6 +50,5 @@ class Log extends Model<LogAttributes> {
 
 Log.initialize(sequelize);
 Log.applyScopes();
-Log.sync();
 
 export default Log;
