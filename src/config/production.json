@@ -7,13 +7,6 @@
   "cors": {
     "origins": [""]
   },
-  "database": {
-    "database": "",
-    "username": "",
-    "password": "",
-    "timezone": "",
-    "host": ""
-  },
   "logging": {
     "level": "database",
     "timezone": "Asia/Kolkata"

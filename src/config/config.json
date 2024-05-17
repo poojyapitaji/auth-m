@@ -1,0 +1,29 @@
+{
+  "development": {
+    "username": "root",
+    "password": null,
+    "database": "auth-m",
+    "host": "127.0.0.1",
+    "dialect": "mysql",
+    "migrationStorage": "sequelize",
+    "migrationStorageTableName": "migrations"
+  },
+  "test": {
+    "username": "root",
+    "password": null,
+    "database": "auth-m",
+    "host": "127.0.0.1",
+    "dialect": "mysql",
+    "migrationStorage": "sequelize",
+    "migrationStorageTableName": "migrations"
+  },
+  "production": {
+    "username": "roots",
+    "password": null,
+    "database": "auth-m",
+    "host": "127.0.0.1",
+    "dialect": "mysql",
+    "migrationStorage": "sequelize",
+    "migrationStorageTableName": "migrations"
+  }
+}

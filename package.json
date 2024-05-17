@@ -11,7 +11,7 @@
     "test": "cross-env NODE_CONFIG_DIR=./src/config jest --config jest.config.ts",
     "lint": "eslint 'src/**/*.{ts}'",
     "precommit": "concurrently \"npm run lint\" \"npm run test\"",
-    "migrate:up": "npx sequelize-cli db:migrate",
+    "migrate": "npx sequelize-cli db:migrate",
     "migrate:undo": "npx sequelize-cli db:migrate:undo"
   },
   "husky": {

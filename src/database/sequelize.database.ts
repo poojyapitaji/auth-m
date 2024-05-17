@@ -1,17 +1,26 @@
-import { Sequelize } from 'sequelize';
-import config from 'config';
+import { Sequelize, Dialect } from 'sequelize';
+import config from '../config/config.json';
 
-const database = config.get<string>('database.name');
-const username = config.get<string>('database.username');
-const password = config.get<string>('database.password');
-const timezone = config.get<string>('database.timezone');
-const host = config.get<string>('database.host');
+interface DatabaseConfig {
+  username: string;
+  password: string | null;
+  database: string;
+  host: string;
+  dialect: Dialect;
+}
 
-const sequelize = new Sequelize(database, username, password, {
-  timezone,
+const nodeEnv = process.env.NODE_ENV || 'development';
+
+const typedConfig: {
+  [key: string]: Omit<DatabaseConfig, 'dialect'> & { dialect: string };
+} = config;
+
+const { username, password, database, host, dialect } = typedConfig[nodeEnv];
+
+const sequelize = new Sequelize(database, username, password ?? undefined, {
   host,
-  logging: true,
-  dialect: 'mysql'
+  dialect: dialect as Dialect,
+  logging: true
 });
 
 export default sequelize;

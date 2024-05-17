@@ -75,7 +75,12 @@ const logger = (app: Express) => {
       app.use(
         morgan(formatFile, {
           stream: new FileStream(),
-          skip: (req: Request) => req.originalUrl.startsWith('/log')
+          skip: (req: Request) => {
+            const skipEndpoints = ['/logs', '/docs'];
+            return skipEndpoints.some((endpoint) =>
+              req.originalUrl.includes(endpoint)
+            );
+          }
         })
       );
       break;
@@ -83,7 +88,12 @@ const logger = (app: Express) => {
       app.use(
         morgan(formatDatabase, {
           stream: new DBStream(),
-          skip: (req: Request) => req.originalUrl.startsWith('/log')
+          skip: (req: Request) => {
+            const skipEndpoints = ['/logs', '/docs'];
+            return skipEndpoints.some((endpoint) =>
+              req.originalUrl.includes(endpoint)
+            );
+          }
         })
       );
       break;

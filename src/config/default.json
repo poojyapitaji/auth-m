@@ -11,15 +11,8 @@
   "cors": {
     "origins": ["postman-origin", "https:/localhost:2821"]
   },
-  "database": {
-    "name": "auth-m",
-    "username": "root",
-    "password": null,
-    "timezone": "Asia/Kolkata",
-    "host": "localhost"
-  },
   "logging": {
-    "level": "default",
+    "level": "file",
     "timezone": "Asia/Kolkata"
   }
 }
