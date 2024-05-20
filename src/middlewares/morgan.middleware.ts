@@ -18,7 +18,7 @@ class DBStream extends Writable {
       try {
         // Import Log dynamically to prevent Sequelize errors when database is not set up
         const Log = (await import('../models/log.model')).default;
-        await Log.create({ uuid: uuid.v4(), log: chunk.toString() });
+        await Log.create({ log: chunk.toString() });
         callback();
       } catch (error) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment

@@ -1,10 +1,12 @@
-import express from 'express';
+import { Router } from 'express';
 
 import { log } from '../../controllers';
 import { auth } from '../../middlewares';
 
-const router = express.Router();
+const router = Router();
 
-router.get('/', auth.verifyToken, log.allLogs);
+router.use(auth.verifyToken);
+
+router.get('/', log.getAllLogs);
 
 export default router;

@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import config from 'config';
 
 // import swaggerDocs from '../../utils/swagger.utils';
+import authRouter from './auth.route';
 import logRouter from './logs.route';
 // import app from '../../app';
 
@@ -16,6 +17,7 @@ router.get('/', (_req: Request, res: Response) => {
 });
 
 router.use('/log', logRouter);
+router.use('/auth', authRouter);
 
 if (isDev) {
   // swaggerDocs(app, port, 'v1');

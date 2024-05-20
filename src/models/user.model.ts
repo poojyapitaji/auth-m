@@ -1,11 +1,16 @@
 import { Sequelize, Model, DataTypes } from 'sequelize';
 import { sequelize } from '../database';
 
-interface UserAttributes {
-  uuid: string;
+export interface UserAttributes {
+  uuid?: string;
   name: string;
   email: string;
   password: string;
+  img?: string;
+  active?: boolean;
+  verification_token?: string;
+  verification_token_expires?: Date;
+  verified_at?: Date;
 }
 
 class User extends Model<UserAttributes> {
@@ -13,6 +18,11 @@ class User extends Model<UserAttributes> {
   public name!: string;
   public email!: string;
   public password!: string;
+  public img!: string;
+  public active!: boolean;
+  public verification_token!: string;
+  public verification_token_expires!: string;
+  public verified_at!: Date;
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -38,6 +48,27 @@ class User extends Model<UserAttributes> {
         password: {
           type: DataTypes.STRING,
           allowNull: false
+        },
+        img: {
+          type: DataTypes.STRING,
+          allowNull: true
+        },
+        active: {
+          type: DataTypes.BOOLEAN,
+          allowNull: false,
+          defaultValue: true
+        },
+        verification_token: {
+          type: DataTypes.STRING,
+          allowNull: true
+        },
+        verification_token_expires: {
+          type: DataTypes.DATE,
+          allowNull: true
+        },
+        verified_at: {
+          type: DataTypes.DATE,
+          allowNull: true
         }
       },
       {
@@ -52,7 +83,14 @@ class User extends Model<UserAttributes> {
 
   public static applyScopes(): void {
     this.addScope('defaultScope', {
-      attributes: { exclude: ['password'] },
+      attributes: {
+        exclude: [
+          'password',
+          'verificationToken',
+          'verification_token_expires',
+          'verified_at'
+        ]
+      },
       order: [['createdAt', 'DESC']]
     });
     this.addScope('withPassword', {

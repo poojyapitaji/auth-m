@@ -3,7 +3,13 @@ import jwt, { VerifyErrors } from 'jsonwebtoken';
 import rateLimit from 'express-rate-limit';
 import { NextFunction, Request, Response } from 'express';
 
-export const loginLimiter = rateLimit({
+interface JwtPayload {
+  uuid: string;
+  name: string;
+  email: string;
+}
+
+export const authRateLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minutes
   max: 5, // Limit each IP to 5 login request per `window` per minute
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
@@ -21,15 +27,31 @@ export const verifyToken = (
   const authHeader =
     (req.headers['authorization'] as string) ||
     (req.headers['Authorization'] as string);
-  if (!authHeader) return res.sendStatus(403);
-  const accessTokenSecret = config.get<string>('secrets.access_token');
+
+  if (!authHeader)
+    return res.status(403).json({ error: 'Authorization header missing' });
+
   const token = authHeader && authHeader.split(' ')[1];
-  if (token === null) return res.sendStatus(401);
+
+  if (token === null)
+    return res.status(401).json({ error: 'Token not provided' });
+
+  const accessTokenSecret = config.get<string>('secrets.access_token');
+
   jwt.verify(
     token,
     accessTokenSecret,
-    (err: VerifyErrors | null, user: unknown) => {
-      if (err) return res.sendStatus(403);
+    (err: VerifyErrors | null, decoded: unknown) => {
+      if (err) {
+        console.error('Token verification failed:', err);
+        return res.status(403).json({ error: 'Token verification failed' });
+      }
+
+      const user = decoded as JwtPayload;
+      if (!user) {
+        return res.status(403).json({ error: 'Token verification failed' });
+      }
+
       res.locals.user = user;
       next();
     }

@@ -2,7 +2,7 @@ import { Sequelize, Model, DataTypes } from 'sequelize';
 import { sequelize } from '../database';
 
 interface LogAttributes {
-  uuid: string;
+  uuid?: string;
   log: unknown;
 }
 

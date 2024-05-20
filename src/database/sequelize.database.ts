@@ -1,5 +1,5 @@
 import { Sequelize, Dialect } from 'sequelize';
-import config from '../config/config.json';
+import config from '../config/database.json';
 
 interface DatabaseConfig {
   username: string;
