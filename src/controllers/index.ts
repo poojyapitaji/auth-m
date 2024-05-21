@@ -1,5 +1,5 @@
-import * as log from './log.controller';
-import * as auth from './auth.controller';
-import * as user from './user.controller';
+import logController from './log.controller';
+import authController from './auth.controller';
+import userController from './user.controller';
 
-export { log, auth, user };
+export { logController, authController, userController };

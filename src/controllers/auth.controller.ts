@@ -9,234 +9,280 @@ import { httpStatus, errorMessages, successMessages } from '../constants';
 import { avatar } from '../utils';
 import { emailService } from '../services';
 
-export const register = async (req: Request, res: Response) => {
-  const errors = validationResult(req);
-
-  if (!errors.isEmpty()) {
-    return res
-      .status(httpStatus.UnprocessableEntity)
-      .json({ errors: errors.array() });
+class AuthController {
+  constructor() {
+    this.register = this.register.bind(this);
+    this.login = this.login.bind(this);
+    this.logout = this.logout.bind(this);
+    this.refreshToken = this.refreshToken.bind(this);
+    this.sendEmailVerificationToken =
+      this.sendEmailVerificationToken.bind(this);
+    this.verifyEmailToken = this.verifyEmailToken.bind(this);
   }
 
-  const { name, email, password } = req.body;
+  private generateToken(
+    email: string,
+    secret: string,
+    expiresIn: string | number
+  ) {
+    return jwt.sign({ email }, secret, { expiresIn });
+  }
 
-  try {
-    const existingUser = await User.findOne({ where: { email } });
-    if (existingUser) {
-      return res.status(httpStatus.Conflict).json({
-        error: errorMessages.UserAlreadyExist.replace('{{email}}', email)
-      });
-    }
-
-    const passwordHash = await bcrypt.hash(password, 10);
-    await User.create({
-      name,
-      email,
-      password: passwordHash
-    });
-
-    await sendEmailVerificationToken(req, res);
-
-    res.status(httpStatus.Created).json({
-      message: successMessages.UserCreationSuccess
-    });
-  } catch (error) {
-    console.error(
-      errorMessages.UnableToCreateUser.replace('{{email}}', email),
-      error
-    );
+  private async handleErrors(res: Response, error: unknown, message: string) {
+    console.error(message, error);
     res
       .status(httpStatus.InternalServerError)
       .json({ error: errorMessages.InternalServerError });
   }
-};
 
-export const login = async (req: Request, res: Response) => {
-  const errors = validationResult(req);
+  public async register(req: Request, res: Response) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res
+        .status(httpStatus.UnprocessableEntity)
+        .json({ errors: errors.array() });
+    }
 
-  if (!errors.isEmpty()) {
-    return res
-      .status(httpStatus.UnprocessableEntity)
-      .json({ errors: errors.array() });
+    const { name, email, password } = req.body;
+
+    try {
+      const existingUser = await User.findOne({ where: { email } });
+      if (existingUser) {
+        return res.status(httpStatus.Conflict).json({
+          error: errorMessages.UserAlreadyExist.replace('{{email}}', email)
+        });
+      }
+
+      const passwordHash = await bcrypt.hash(password, 10);
+      await User.create({ name, email, password: passwordHash });
+
+      await this.sendEmailVerificationToken(req, res);
+
+      res.status(httpStatus.Created).json({
+        message: successMessages.UserCreationSuccess
+      });
+    } catch (error) {
+      this.handleErrors(
+        res,
+        error,
+        errorMessages.UnableToCreateUser.replace('{{email}}', email)
+      );
+    }
   }
 
-  const { email, password } = req.body;
-
-  try {
-    const user = await User.scope('withPassword').findOne({ where: { email } });
-    if (!user) {
+  public async login(req: Request, res: Response) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
       return res
-        .status(httpStatus.NotFound)
-        .json({ error: errorMessages.UserNotFound.replace('{{uuid}}', email) });
+        .status(httpStatus.UnprocessableEntity)
+        .json({ errors: errors.array() });
     }
 
-    if (!user.img) {
-      user.img = avatar.generateAvatar(user.name);
-    }
+    const { email, password } = req.body;
 
-    const checkPassword = await bcrypt.compare(password, user.password);
-    if (!checkPassword) {
+    try {
+      const user = await User.scope('withPassword').findOne({
+        where: { email }
+      });
+      if (!user) {
+        return res.status(httpStatus.NotFound).json({
+          error: errorMessages.UserNotFound.replace('{{uuid}}', email)
+        });
+      }
+
+      if (!user.img) {
+        user.img = avatar.generateAvatar(user.name);
+      }
+
+      const checkPassword = await bcrypt.compare(password, user.password);
+      if (!checkPassword) {
+        return res
+          .status(httpStatus.Unauthorized)
+          .json({ error: errorMessages.InvalidEmailOrPassword });
+      }
+
+      const accessToken = this.generateToken(
+        user.email,
+        config.get('secrets.access_token'),
+        config.get('secrets.access_token_expiry')
+      );
+      const refreshToken = this.generateToken(
+        user.email,
+        config.get('secrets.refresh_token'),
+        config.get('secrets.refresh_token_Expiry')
+      );
+
+      res
+        .status(httpStatus.OK)
+        .cookie('auth-m-rt', refreshToken, {
+          httpOnly: true,
+          secure: true,
+          sameSite: 'none',
+          maxAge: config.get('secrets.refresh_token_Expiry')
+        })
+        .json({
+          accessToken,
+          user: {
+            name: user.name,
+            email: user.email,
+            active: user.active,
+            img: user.img
+          }
+        });
+    } catch (error) {
+      this.handleErrors(res, error, errorMessages.LoginFailed);
+    }
+  }
+
+  public async logout(req: Request, res: Response) {
+    if (!req.cookies || Object.keys(req.cookies).length === 0) {
       return res
-        .status(httpStatus.Unauthorized)
-        .json({ error: errorMessages.InvalidEmailOrPassword });
+        .status(httpStatus.NoContent)
+        .json({ error: errorMessages.CookieNotFound });
     }
-
-    const accessTokenSecret = config.get<string>('secrets.access_token');
-    const refreshTokenSecret = config.get<string>('secrets.refresh_token');
-    const accessTokenExpiry = config.get<string>('secrets.access_token_expiry');
-    const refreshTokenExpiry = config.get<string>(
-      'secrets.refresh_token_Expiry'
-    );
-
-    const accessToken = jwt.sign({ email: user.email }, accessTokenSecret, {
-      expiresIn: accessTokenExpiry
-    });
-    const refreshToken = jwt.sign({ email: user.email }, refreshTokenSecret, {
-      expiresIn: refreshTokenExpiry
-    });
 
     res
       .status(httpStatus.OK)
-      .cookie('auth-m-rt', refreshToken, {
+      .clearCookie('auth-m-rt', {
         httpOnly: true,
         secure: true,
-        sameSite: 'none',
-        maxAge: +refreshTokenExpiry
+        sameSite: 'none'
       })
-      .json({
-        accessToken,
-        user: {
-          name: user.name,
-          email: user.email,
-          active: user.active,
-          img: user.img
-        }
-      });
-  } catch (error) {
-    console.error(errorMessages.LoginFailed, error);
-    res
-      .status(httpStatus.InternalServerError)
-      .json({ error: errorMessages.InternalServerError });
-  }
-};
-
-export const logout = async (req: Request, res: Response) => {
-  const cookies = req.cookies;
-
-  if (Object.keys(cookies).length === 0) {
-    return res
-      .status(httpStatus.NoContent)
-      .json({ error: errorMessages.CookieNotFound });
+      .json({ message: successMessages.LogoutSuccess });
   }
 
-  return res
-    .status(200)
-    .clearCookie('auth-m-rt', {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none'
-    })
-    .json({ message: successMessages.LogoutSuccess });
-};
-
-export const refreshToken = async (req: Request, res: Response) => {
-  const cookies = req.cookies;
-  if (Object.keys(cookies).length === 0) {
-    return res
-      .status(httpStatus.NoContent)
-      .json({ error: errorMessages.CookieNotFound });
-  }
-
-  const refreshToken = cookies['auth-m-rt'];
-  if (!refreshToken)
-    return res
-      .status(httpStatus.Unauthorized)
-      .json({ error: errorMessages.CookieNotFound });
-
-  try {
-    const accessTokenSecret = config.get<string>('secrets.access_token');
-    const refreshTokenSecret = config.get<string>('secrets.refresh_token');
-    const accessTokenExpiry = config.get<string>('secrets.access_token_expiry');
-
-    const user = jwt.verify(refreshToken, refreshTokenSecret) as {
-      email: string;
-    };
-
-    const accessToken = jwt.sign({ email: user.email }, accessTokenSecret, {
-      expiresIn: accessTokenExpiry
-    });
-
-    res
-      .status(httpStatus.OK)
-      .json({ message: successMessages.TokenRefreshSuccess, accessToken });
-  } catch (error) {
-    console.error(errorMessages.TokenRefreshFailed, error);
-    res
-      .status(httpStatus.Forbidden)
-      .json({ error: errorMessages.TokenRefreshFailed });
-  }
-};
-
-export const sendEmailVerificationToken = async (
-  req: Request,
-  res: Response
-) => {
-  const { email } = req.body;
-
-  if (!email) {
-    return res
-      .status(httpStatus.NoContent)
-      .json({ error: errorMessages.InvalidEmail });
-  }
-
-  try {
-    const user = await User.findOne({ where: { email } });
-
-    if (!user) {
+  public async refreshToken(req: Request, res: Response) {
+    const cookies = req.cookies;
+    if (
+      !cookies ||
+      Object.keys(cookies).length === 0 ||
+      !cookies['auth-m-rt']
+    ) {
       return res
-        .status(httpStatus.NotFound)
-        .json({ error: errorMessages.UserNotFound.replace('{{uuid}}', email) });
+        .status(httpStatus.Unauthorized)
+        .json({ error: errorMessages.CookieNotFound });
     }
 
-    if (user.verified_at) {
-      return res
+    try {
+      const { email } = jwt.verify(
+        cookies['auth-m-rt'],
+        config.get('secrets.refresh_token')
+      ) as { email: string };
+      const accessToken = this.generateToken(
+        email,
+        config.get('secrets.access_token'),
+        config.get('secrets.access_token_expiry')
+      );
+
+      res
         .status(httpStatus.OK)
-        .json({ message: successMessages.EmailAlreadyVerified });
+        .json({ message: successMessages.TokenRefreshSuccess, accessToken });
+    } catch (error) {
+      this.handleErrors(res, error, errorMessages.TokenRefreshFailed);
+    }
+  }
+
+  public async sendEmailVerificationToken(req: Request, res: Response) {
+    const { email } = req.body;
+
+    if (!email) {
+      return res
+        .status(httpStatus.NoContent)
+        .json({ error: errorMessages.InvalidEmail });
     }
 
-    const emailVerificationSecret = config.get<string>(
-      'secrets.email_verification'
-    );
-    const emailVerificationExpiry = config.get<number>(
-      'secrets.email_verification_expiry'
-    );
+    try {
+      const user = await User.findOne({ where: { email } });
 
-    const token = jwt.sign({ email }, emailVerificationSecret, {
-      expiresIn: emailVerificationExpiry
-    });
+      if (!user) {
+        return res.status(httpStatus.NotFound).json({
+          error: errorMessages.UserNotFound.replace('{{uuid}}', email)
+        });
+      }
 
-    await User.update(
-      {
-        verification_token: token,
-        verification_token_expires: new Date(Date.now() + 10 * 60 * 1000)
-      },
-      { where: { email } }
-    );
+      if (user.verified_at) {
+        return res
+          .status(httpStatus.OK)
+          .json({ message: successMessages.EmailAlreadyVerified });
+      }
 
-    await emailService.sendEmail({
-      to: email,
-      subject: 'Email Verification',
-      template: 'email_verify',
-      data: { token }
-    });
+      const token = this.generateToken(
+        email,
+        config.get('secrets.email_verification_token'),
+        config.get('secrets.email_verification_token_expiry')
+      );
+      user.verification_token = token;
+      user.verification_token_expires = new Date(Date.now() + 10 * 60 * 1000);
+      await user.save();
 
-    res.status(200).json({
-      message: successMessages.VerificationEmailSent
-    });
-  } catch (error) {
-    console.error(errorMessages.NotAbleToSendEmailVerificationLink, error);
-    res
-      .status(httpStatus.Forbidden)
-      .json({ error: errorMessages.NotAbleToSendEmailVerificationLink });
+      await emailService.sendEmail({
+        to: email,
+        subject: 'Email Verification',
+        template: 'email_verify',
+        data: { token }
+      });
+
+      res
+        .status(httpStatus.OK)
+        .json({ message: successMessages.VerificationEmailSent });
+    } catch (error) {
+      this.handleErrors(
+        res,
+        error,
+        errorMessages.NotAbleToSendEmailVerificationLink
+      );
+    }
   }
-};
+
+  public async verifyEmailToken(req: Request, res: Response) {
+    const { token } = req.params;
+
+    if (!token) {
+      return res
+        .status(httpStatus.BadRequest)
+        .json({ error: errorMessages.TokenNotFound });
+    }
+
+    try {
+      const emailVerificationSecret = config.get<string>(
+        'secrets.email_verification_token'
+      );
+      const decoded = jwt.verify(token, emailVerificationSecret) as {
+        email: string;
+      };
+
+      const user = await User.findOne({
+        where: { email: decoded.email, verification_token: token }
+      });
+
+      if (!user) {
+        return res
+          .status(httpStatus.NotFound)
+          .json({ error: errorMessages.TokenNotFound });
+      }
+
+      if (
+        user.verification_token_expires &&
+        new Date() > new Date(user.verification_token_expires)
+      ) {
+        return res
+          .status(httpStatus.BadRequest)
+          .json({ error: errorMessages.TokenExpired });
+      }
+
+      user.verified_at = new Date();
+      user.verification_token = '';
+      user.verification_token_expires = null;
+
+      await user.save();
+
+      res.status(httpStatus.OK).json({
+        message: successMessages.EmailVerifiedSuccessfully
+      });
+    } catch (error) {
+      this.handleErrors(res, error, errorMessages.UnableToVerifyToken);
+    }
+  }
+}
+
+export default new AuthController();

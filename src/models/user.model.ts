@@ -9,7 +9,7 @@ export interface UserAttributes {
   img?: string;
   active?: boolean;
   verification_token?: string;
-  verification_token_expires?: Date;
+  verification_token_expires?: Date | null;
   verified_at?: Date;
 }
 
@@ -21,7 +21,7 @@ class User extends Model<UserAttributes> {
   public img!: string;
   public active!: boolean;
   public verification_token!: string;
-  public verification_token_expires!: string;
+  public verification_token_expires!: Date | null;
   public verified_at!: Date;
 
   public readonly createdAt!: Date;

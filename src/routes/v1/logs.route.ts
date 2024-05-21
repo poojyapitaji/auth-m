@@ -1,12 +1,12 @@
 import { Router } from 'express';
 
-import { log } from '../../controllers';
-import { auth } from '../../middlewares';
+import { logController } from '../../controllers';
+import { auth as authMiddleware } from '../../middlewares';
 
 const router = Router();
 
-router.use(auth.verifyToken);
+router.use(authMiddleware.verifyToken);
 
-router.get('/', log.getAllLogs);
+router.get('/all', logController.getAllLogs);
 
 export default router;

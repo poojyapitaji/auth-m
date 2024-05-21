@@ -16,5 +16,8 @@
   "TokenRefreshFailed": "Failed to refresh token. Please log in again.",
   "CookieNotFound": "No cookie found in the request. Please ensure that cookies are enabled and try again.",
   "InvalidUuid": "Invalid UUID provided. Please provide a correctly formatted UUID and try again.",
-  "NotAbleToSendEmailVerificationLink": "Failed to send the email verification link. Please try again later."
+  "NotAbleToSendEmailVerificationLink": "Failed to send the email verification link. Please try again later.",
+  "TokenNotFound": "Verification token not found. Please request a new verification email.",
+  "TokenExpired": "Verification token has expired. Please request a new verification email.",
+  "UnableToVerifyToken": "Unable to verify the token. Please request a new verification email."
 }

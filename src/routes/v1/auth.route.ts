@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import config from 'config';
 
-import { auth } from '../../controllers';
+import { authController } from '../../controllers';
 import { auth as authMiddleware } from '../../middlewares';
 import {
   registerValidator,
@@ -18,14 +18,15 @@ if (isProduction) {
   router.use(authMiddleware.authRateLimiter);
 }
 
-router.post('/register', registerValidator, auth.register);
-router.post('/login', loginValidator, auth.login);
-router.post('/logout', auth.logout);
-router.post('/refresh-token', auth.refreshToken);
+router.post('/register', registerValidator, authController.register);
+router.post('/login', loginValidator, authController.login);
+router.post('/logout', authController.logout);
+router.post('/refresh-token', authController.refreshToken);
 router.post(
-  '/email-verification',
+  '/send-verification-email',
   verifyEmailValidator,
-  auth.sendEmailVerificationToken
+  authController.sendEmailVerificationToken
 );
+router.get('/verify-email/:token', authController.verifyEmailToken);
 
 export default router;

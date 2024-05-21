@@ -6,5 +6,6 @@
   "PasswordResetSuccess": "Password reset successful. An email has been sent to your registered email address with further instructions.",
   "TokenRefreshSuccess": "Token refresh successful. Your authentication token has been successfully refreshed.",
   "VerificationEmailSent": "Verification email sent successfully. Please check your email inbox and follow the instructions to verify your account.",
-  "EmailAlreadyVerified": "Email address has already been verified. Please proceed with your login."
+  "EmailAlreadyVerified": "Email address has already been verified. Please proceed with your login.",
+  "EmailVerifiedSuccessfully": "Email address verified successfully. You can now log in."
 }
