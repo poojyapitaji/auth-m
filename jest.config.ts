@@ -5,7 +5,8 @@ const config: Config.InitialOptions = {
   testEnvironment: 'node',
   testMatch: ['**/?(*.)+(spec|test).[tj]s?(x)'],
   moduleFileExtensions: ['ts', 'js'],
-  passWithNoTests: true
+  passWithNoTests: true,
+  watchman: false
 };
 
 export default config;

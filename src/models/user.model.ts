@@ -86,7 +86,7 @@ class User extends Model<UserAttributes> {
       attributes: {
         exclude: [
           'password',
-          'verificationToken',
+          'verification_token',
           'verification_token_expires',
           'verified_at'
         ]

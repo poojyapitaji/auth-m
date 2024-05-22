@@ -29,7 +29,7 @@ class UserController {
     if (!uuid)
       return res.status(422).json({ error: errorMessages.InvalidUuid });
     try {
-      const user = await User.findOne({ where: { uuid } });
+      const user = await User.findByPk(uuid);
       if (!user)
         return res.status(httpStatus.NotFound).json({
           error: errorMessages.UserNotFound.replace('{{uuid}}', uuid)
