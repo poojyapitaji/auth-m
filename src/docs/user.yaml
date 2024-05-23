@@ -1,0 +1,47 @@
+tags:
+  - name: Users
+    description: APIs related to users
+
+paths:
+  /api/user/all:
+    get:
+      summary: Get all users
+      tags: [Users]
+      description: Retrieve all users.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden, failed to verify the authentication token.
+        '500':
+          description: Internal Server Error
+
+  /api/user/{uuid}:
+    get:
+      summary: Get user by UUID
+      tags: [Users]
+      description: Retrieve a user by UUID.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: uuid
+          required: true
+          schema:
+            type: string
+          description: UUID of the user to retrieve
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden, failed to verify the authentication token.
+        '404':
+          description: User not found
+        '500':
+          description: Internal Server Error

@@ -1,9 +1,17 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 
-import v1 from './v1';
+import authRouter from './auth.route';
+import logRouter from './logs.route';
+import userRouter from './user.route';
 
-const routes = Router();
+const router = Router();
 
-routes.use('/v1', v1);
+router.get('/', (_req: Request, res: Response) => {
+  res.redirect('/api/api-docs');
+});
 
-export default routes;
+router.use('/log', logRouter);
+router.use('/auth', authRouter);
+router.use('/user', userRouter);
+
+export default router;

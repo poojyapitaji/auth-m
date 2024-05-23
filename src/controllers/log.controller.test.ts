@@ -10,7 +10,7 @@ jest.mock('../models/log.model');
 const app: Application = express();
 app.use(express.json());
 
-const logRoute = '/api/v1/log/all';
+const logRoute = '/api/log/all';
 
 app.get(logRoute, logController.getAllLogs);
 

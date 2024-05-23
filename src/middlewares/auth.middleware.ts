@@ -3,6 +3,8 @@ import jwt, { VerifyErrors } from 'jsonwebtoken';
 import rateLimit from 'express-rate-limit';
 import { NextFunction, Request, Response } from 'express';
 
+import { httpStatus, errorMessages } from '../constants';
+
 interface JwtPayload {
   uuid: string;
   name: string;
@@ -29,12 +31,16 @@ export const verifyToken = (
     (req.headers['Authorization'] as string);
 
   if (!authHeader)
-    return res.status(403).json({ error: 'Authorization header missing' });
+    return res
+      .status(httpStatus.Forbidden)
+      .json({ error: errorMessages.MissingAuthorizationHeader });
 
   const token = authHeader && authHeader.split(' ')[1];
 
   if (token === null)
-    return res.status(401).json({ error: 'Token not provided' });
+    return res
+      .status(httpStatus.Unauthorized)
+      .json({ error: errorMessages.TokenNotProvided });
 
   const accessTokenSecret = config.get<string>('secrets.access_token');
 
@@ -43,13 +49,17 @@ export const verifyToken = (
     accessTokenSecret,
     (err: VerifyErrors | null, decoded: unknown) => {
       if (err) {
-        console.error('Token verification failed:', err);
-        return res.status(403).json({ error: 'Token verification failed' });
+        console.error(errorMessages.TokenVerificationFailed, err);
+        return res
+          .status(httpStatus.Forbidden)
+          .json({ error: errorMessages.TokenVerificationFailed });
       }
 
       const user = decoded as JwtPayload;
       if (!user) {
-        return res.status(403).json({ error: 'Token verification failed' });
+        return res
+          .status(httpStatus.Forbidden)
+          .json({ error: errorMessages.TokenVerificationFailed });
       }
 
       res.locals.user = user;

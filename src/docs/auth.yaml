@@ -1,0 +1,131 @@
+tags:
+  - name: Authentication
+    description: APIs related to user authentication, login, and logout
+  - name: Registration
+    description: APIs related to user registration and account creation
+  - name: Email Verification
+    description: APIs related to email verification and account activation
+
+paths:
+  /api/auth/register:
+    post:
+      summary: Register a new user
+      tags: [Registration]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '201':
+          description: User created successfully.
+        '409':
+          description: User already exists with the provided email.
+        '422':
+          description: Unprocessable Entity, validation error.
+        '500':
+          description: Internal Server Error, unable to create user.
+
+  /api/auth/login:
+    post:
+      summary: Login user
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: User logged in successfully. Returns a user object along with an access token.
+        '401':
+          description: Unauthorized, invalid email or password.
+        '404':
+          description: User not found.
+        '409':
+          description: User already exists with the provided email.
+        '422':
+          description: Unprocessable Entity, validation error.
+        '500':
+          description: Internal Server Error, Unable to log in.
+
+  /api/auth/logout:
+    post:
+      summary: Logout user
+      tags: [Authentication]
+      requestBody:
+        required: false
+      responses:
+        '200':
+          description: Logout successful. Returns a message confirming the logout.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Message confirming the successful logout.
+        '204':
+          description: No content. Cookie not found.
+        '500':
+          description: Internal Server Error. Unable to logout.
+
+  /api/auth/send-verification-email:
+    post:
+      summary: Send email verification token
+      tags: [Email Verification]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: The email address to send the verification token.
+      responses:
+        '200':
+          description: Email verification token sent successfully.
+        '204':
+          description: No Content. Invalid email provided.
+        '404':
+          description: Not Found. User not found with the provided email.
+        '500':
+          description: Internal Server Error. Unable to send the email verification link.
+
+  /api/auth/verify-email/{token}:
+    get:
+      summary: Verify email token
+      tags: [Email Verification]
+      parameters:
+        - in: path
+          name: token
+          required: true
+          description: The verification token received in the email.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Email verified successfully. Message confirming that the email has been verified.
+        '400':
+          description: Bad request. Token not found or expired.
+        '404':
+          description: Not found. Token not found in the database.
+        '500':
+          description: Internal Server Error. Unable to verify the token.

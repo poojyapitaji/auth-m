@@ -9,8 +9,8 @@ jest.mock('../models/user.model');
 
 const app: Application = express();
 
-const allUserRoute = '/api/v1/user/all';
-const userByUuidRoute = '/api/v1/user/:uuid';
+const allUserRoute = '/api/user/all';
+const userByUuidRoute = '/api/user/:uuid';
 
 app.get(allUserRoute, userController.getAllUsers);
 app.get(userByUuidRoute, userController.getUserByUuid);

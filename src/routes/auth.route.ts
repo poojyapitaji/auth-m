@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import config from 'config';
 
-import { authController } from '../../controllers';
-import { auth as authMiddleware } from '../../middlewares';
+import { authController } from '../controllers';
+import { auth as authMiddleware } from '../middlewares';
 import {
   registerValidator,
   loginValidator,
   verifyEmailValidator
-} from '../../middlewares/validators';
+} from '../middlewares/validators';
 
 const router = Router();
 
