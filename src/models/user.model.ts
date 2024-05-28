@@ -1,5 +1,7 @@
 import { Sequelize, Model, DataTypes } from 'sequelize';
+
 import { sequelize } from '../database';
+import { avatar } from '../utils';
 
 export interface UserAttributes {
   uuid?: string;
@@ -76,7 +78,14 @@ class User extends Model<UserAttributes> {
         modelName: 'user',
         tableName: 'users',
         timestamps: true,
-        underscored: true
+        underscored: true,
+        hooks: {
+          beforeCreate: (user: User) => {
+            if (!user.img) {
+              user.img = avatar.generateAvatar(user.name);
+            }
+          }
+        }
       }
     );
   }
@@ -96,6 +105,9 @@ class User extends Model<UserAttributes> {
     this.addScope('withPassword', {
       attributes: { include: ['password'] },
       order: [['createdAt', 'DESC']]
+    });
+    this.addScope('withVerifiedAt', {
+      attributes: { include: ['verified_at'] }
     });
   }
 }

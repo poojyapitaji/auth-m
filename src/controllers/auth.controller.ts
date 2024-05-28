@@ -6,7 +6,6 @@ import jwt from 'jsonwebtoken';
 
 import { User } from '../models';
 import { httpStatus, errorMessages, successMessages } from '../constants';
-import { avatar } from '../utils';
 import { emailService } from '../services';
 
 class AuthController {
@@ -56,8 +55,6 @@ class AuthController {
       const passwordHash = await bcrypt.hash(password, 10);
       await User.create({ name, email, password: passwordHash });
 
-      await this.sendEmailVerificationToken(req, res);
-
       res.status(httpStatus.Created).json({
         message: successMessages.UserCreationSuccess
       });
@@ -81,25 +78,28 @@ class AuthController {
     const { email, password } = req.body;
 
     try {
-      const user = await User.scope('withPassword').findOne({
-        where: { email }
-      });
-      if (!user) {
+      const user = await User.scope(['withPassword', 'withVerifiedAt']).findOne(
+        {
+          where: { email }
+        }
+      );
+
+      if (!user)
         return res.status(httpStatus.NotFound).json({
           error: errorMessages.UserNotFound.replace('{{uuid}}', email)
         });
-      }
-
-      if (!user.img) {
-        user.img = avatar.generateAvatar(user.name);
-      }
 
       const checkPassword = await bcrypt.compare(password, user.password);
-      if (!checkPassword) {
+
+      if (!checkPassword)
         return res
           .status(httpStatus.Unauthorized)
           .json({ error: errorMessages.InvalidEmailOrPassword });
-      }
+
+      if (!user.verified_at)
+        return res
+          .status(httpStatus.Forbidden)
+          .json({ error: errorMessages.EmailVerificationRequired });
 
       const accessToken = this.generateToken(
         user.email,
@@ -123,6 +123,7 @@ class AuthController {
         .json({
           accessToken,
           user: {
+            uuid: user.uuid,
             name: user.name,
             email: user.email,
             active: user.active,
@@ -183,28 +184,32 @@ class AuthController {
   }
 
   public async sendEmailVerificationToken(req: Request, res: Response) {
-    const { email } = req.body;
+    const { email, redirectionUrl } = req.body;
 
-    if (!email) {
+    if (!email)
       return res
-        .status(httpStatus.NoContent)
+        .status(httpStatus.BadRequest)
         .json({ error: errorMessages.InvalidEmail });
-    }
+
+    if (!redirectionUrl)
+      return res
+        .status(httpStatus.BadRequest)
+        .json({ error: errorMessages.RedirectUrlRequired });
 
     try {
-      const user = await User.findOne({ where: { email } });
+      const user = await User.scope('withVerifiedAt').findOne({
+        where: { email }
+      });
 
-      if (!user) {
+      if (!user)
         return res.status(httpStatus.NotFound).json({
           error: errorMessages.UserNotFound.replace('{{uuid}}', email)
         });
-      }
 
-      if (user.verified_at) {
+      if (user.verified_at)
         return res
           .status(httpStatus.OK)
           .json({ message: successMessages.EmailAlreadyVerified });
-      }
 
       const token = this.generateToken(
         email,
@@ -219,7 +224,7 @@ class AuthController {
         to: email,
         subject: 'Email Verification',
         template: 'email_verify',
-        data: { token }
+        data: { token, redirectionUrl }
       });
 
       res
@@ -237,11 +242,10 @@ class AuthController {
   public async verifyEmailToken(req: Request, res: Response) {
     const { token } = req.params;
 
-    if (!token) {
+    if (!token)
       return res
         .status(httpStatus.BadRequest)
         .json({ error: errorMessages.TokenNotFound });
-    }
 
     try {
       const emailVerificationSecret = config.get<string>(
@@ -255,26 +259,31 @@ class AuthController {
         where: { email: decoded.email, verification_token: token }
       });
 
-      if (!user) {
+      if (!user)
         return res
           .status(httpStatus.NotFound)
           .json({ error: errorMessages.TokenNotFound });
-      }
 
       if (
         user.verification_token_expires &&
         new Date() > new Date(user.verification_token_expires)
-      ) {
+      )
         return res
           .status(httpStatus.BadRequest)
           .json({ error: errorMessages.TokenExpired });
-      }
 
       user.verified_at = new Date();
       user.verification_token = '';
       user.verification_token_expires = null;
 
       await user.save();
+
+      const { redirectTo } = req.query;
+
+      if (redirectTo)
+        return res.redirect(
+          `${redirectTo}?msg=${successMessages.EmailVerifiedSuccessfully}`
+        );
 
       res.status(httpStatus.OK).json({
         message: successMessages.EmailVerifiedSuccessfully
