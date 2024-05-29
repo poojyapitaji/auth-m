@@ -60,7 +60,7 @@ paths:
           required: true
           schema:
             type: string
-          description: UUID of the user to delete
+          description: UUID of the user to update
       requestBody:
         required: true
         content:

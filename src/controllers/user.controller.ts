@@ -7,9 +7,11 @@ class UserController {
   constructor() {
     this.getAllUsers = this.getAllUsers.bind(this);
     this.getUserByUuid = this.getUserByUuid.bind(this);
+    this.updateUser = this.updateUser.bind(this);
+    this.deleteUser = this.deleteUser.bind(this);
   }
 
-  private async handleErrors(res: Response, error: unknown, message: string) {
+  private handleErrors(res: Response, error: unknown, message: string) {
     console.error(message, error);
     res
       .status(httpStatus.InternalServerError)
